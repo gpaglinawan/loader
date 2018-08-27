@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:core="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+    <munit:config mock-connectors="false" mock-inbounds="false" name="munit" doc:name="MUnit configuration"/>
+    <spring:beans>
+        <spring:import resource="classpath:workers.xml"/>
+        <spring:import resource="classpath:api.xml"/>
+        <spring:import resource="classpath:globals.xml"/>
+        <spring:import resource="classpath:helpers.xml"/>
+        <spring:import resource="classpath:request-impl.xml"/>
+        <spring:import resource="classpath:exception.xml"/>
+    </spring:beans>
+    <munit:test name="CheckLOBValueifWFS" description="Test" ignore="true">
+        <munit:set payload="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="OnBoardingCustomerRequestExperienceAPI-200"/>
+        <flow-ref name="addCustomerToCRSTN-Worker" doc:name="addCustomerToCRSTN-Worker"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <munit:assert-true message="Data Not Matching" condition="#[payload.sarf[0].code == &quot;PAYDAY&quot;]" doc:name="Assert True"/>
+    </munit:test>
+    <munit:test name="ChecktheValueoficiscLientIdequalscustomerMasterId" description="Test" ignore="true">
+        <munit:set payload="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" mimeType="application/json" doc:name="OnBoardingCustomerRequestExperienceAPI-200"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <json:json-to-object-transformer returnClass="java.util.Map" doc:name="JSON to Object"/>
+        <munit:assert-true message="Data Not Matching" condition="#[payload.Request.payload.customer.customerMasterId == '245166464']" doc:name="Assert True"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ '245166464']" actualValue="#[payload.Request.payload.customer.customerMasterId ]" doc:name="Assert Equals"/>
+    </munit:test>
+   <munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest1" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.person.firstName !=null]" doc:name="validating firstName in Individualentity is not null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'Suman']" actualValue="#[payload.Request.payload.customer.individualEntity.person.firstName]" doc:name="validating firstName in individual object is as expected"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest2" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.person.dateOfBirth !=null]" doc:name="validating dateOfBirth in Individualentity not null if orgtype is individual "/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ '10-10-198']" actualValue="#[payload.Request.payload.customer.individualEntity.person.dateOfBirth]" doc:name="validating dateOfBirth in individual object is as expected"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest3" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.person.govermentId.description !=null]" doc:name="validating Individual attribute not null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'Driving license']" actualValue="#[payload.Request.payload.customer.individualEntity.govermentId.description]" doc:name="validating attribute value in individual object if orgtype is individual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest4" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.riskRatingAttributes.cip.cipNoticeProvidedDate !=null]" doc:name="validating Individual attribute not null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['2014-05-23 (ISO 8601 date)']" actualValue="#[payload.Request.payload.customer.individualEntity.riskRatingAttributes.cip.cipNoticeProvidedDate]" doc:name="validating cipNoticeProvidedDate value in individual object if orgtype is individual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest5" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.riskRatingAttributes.mktsServed.mktCountry !=null]" doc:name="validating Individual attribute not null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['BO']" actualValue="#[payload.Request.payload.customer.individualEntity.riskRatingAttributes.mktsServed.cip.mktCountry]" doc:name="validating attribute value in individual object if orgtype is individual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest6" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.nationality !=null]" doc:name="validating Individual attribute not null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['American']" actualValue="#[payload.Request.payload.customer.individualEntity.nationality]" doc:name="validating attribute value in individual object if orgtype is individual"/>
+    </munit:test>
+
+<!--   Validating fields in nonIndividual entity are null when the customer is individual entity  -->
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest7" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonIndividualEntity.taxId.taxIDValue =null]" doc:name="validating nonIndividual attribute null if orgtype is individual"/>
+       <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'null']" actualValue="#[payload.Request.payload.customer.nonIndividualEntity.taxId.taxIDValue]" doc:name="validating attribute value in nonindividual object if orgtype is individual"/> 
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest8" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonIndividualEntity.govermentId.typeCode =null]" doc:name="validating nonIndividual attribute null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'null']" actualValue="#[payload.Request.payload.customer.nonIndividualEntity.govermentId.typeCode]" doc:name="validating attribute value in nonindividual object if orgtype is individual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest9" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonIndividualEntity.riskRatingAttributes.eddcRequired =null]" doc:name="validating nonIndividual attribute null if orgtype is individuall"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'null']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.eddcRequired]" doc:name="validating attribute value in nonindividual object if orgtype is individual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest10" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.cip.cipNoticeProvided =null]" doc:name="validating nonIndividual attribute null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['null']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.cip.cipNoticeProvided]" doc:name="validating attribute value in nonindividual object if orgtype is individual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest11" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.products.source =null]" doc:name="validating nonIndividual attribute null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['null']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.products.source]" doc:name="validating attribute value in nonindividual object if orgtype is individual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest12" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestExperienceAPI-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.mktsServed.mktCountry =null]" doc:name="validating nonIndividual attribute null if orgtype is individual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['null']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.mktsServed.mktCountry ]" doc:name="validating attribute value in nonindividual object if orgtype is individual"/>
+    </munit:test>
+    
+   <!-- Validating fields in Canonical nonindividualentity object are not null and have some expected values when the WFS customer is nonindividual  -->
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest13" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is nonindividual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.taxId.taxIDValue !=null]" doc:name="validating NonIndividual attributes not null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ '87654321']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.taxId.taxIDValue]" doc:name="validating attribute value in nonindividual object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest14" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is nonindividual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.govermentId.expDate !=null]" doc:name="validating nonindividualEntity attributes not null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ '06-08-2020']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.govermentId.expDate]" doc:name="validating attribute value in nonindividual object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest15" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is nonindividual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.eddRequired !=null]" doc:name="validating nonindividualEntity attributes not null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['Y']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.eddRequired]" doc:name="validating attribute value in nonindividual object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest16" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is nonindividual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.cip.cipNoticeProvidedDate !=null]" doc:name="validating nonindividualEntity attributes not null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['2014-05-23 (ISO 8601 date)']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.cip.cipNoticeProvidedDate]" doc:name="validating attribute value in nonindividual object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest17" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is nonindividual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.sarf.lob !=null]" doc:name="validating nonindividualEntity attributes not null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['WFS']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.sarf.lob]" doc:name="validating attribute value in nonindividual object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest18" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is nonindividual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.products.code !=null]" doc:name="validating nonindividualEntity attributes not null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['PD7']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.products.code]" doc:name="validating attribute value in nonindividual object if orgtype is nonindividual"/>
+    </munit:test>
+
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest19" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is nonindividual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.publiclyTradedInfo.marketCapUnit !=null]" doc:name="validating nonindividualEntity attributes not null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['Millions']" actualValue="#[payload.Request.payload.customer.nonindividualEntity.publiclyTradedInfo.marketCapUnit]" doc:name="validating attribute value in nonindividual object if orgtype is nonindividual"/>
+    </munit:test>
+
+
+<!-- Validating fields in Nonindividual shoud be null when the customer is individual entity -->
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest20" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.IndividualEntity.person.middleName =null]" doc:name="validating Individual attribute null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'null']" actualValue="#[payload.Request.payload.customer.IndividualEntity.person.middleName]" doc:name="validating individuals attribute to be null object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest21" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.IndividualEntity.person.citizenship =null]" doc:name="validating Individual attribute null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'null']" actualValue="#[payload.Request.payload.customer.IndividualEntity.person.citizenship]" doc:name="validating individuals attribute to be null object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest22" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.IndividualEntity.person.govermentId.issuingCountry =null]" doc:name="vvalidating Individual attribute null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#[ 'null']" actualValue="#[payload.Request.payload.customer.individualEntity.govermentId.issuingCountry]" doc:name="validating individuals attribute to be null object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest23" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.riskRatingAttributes.cip.cipNoticeProvidedDate =null]" doc:name="validating Individual attribute null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['null']" actualValue="#[payload.Request.payload.customer.individualEntity.riskRatingAttributes.cip.cipNoticeProvidedDate]" doc:name="validating individuals attribute to be null object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest24" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.nonindividualEntity.riskRatingAttributes.sarf.comment =null]" doc:name="validating Individual attribute null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['null']" actualValue="#[payload.Request.payload.customer.individualEntity.riskRatingAttributes.sarf.comment]" doc:name="validating individuals attribute to be null object if orgtype is nonindividual"/>
+    </munit:test>
+
+<munit:test name="workers-test-suite-validation-TransformFacadeRequestToCanonicalTest25" description="Test">
+        <set-payload value="#[getResource('src/test/resources/OnBoardingCustomerRequestWhenOrgtypeIsnonIndividual-200.json').asString()]" doc:name="WFS Request when Orgtype is individual"/>
+        <flow-ref name="TransformFacadeRequestToCanonical" doc:name="TransformFacadeRequestToCanonical"/>
+        <munit:assert-true condition="#[payload.Request.payload.customer.individualEntity.pepStatus =null]" doc:name="validating Individual attribute null if orgtype is nonindividual"/>
+        <munit:assert-on-equals message="Data Not Matching" expectedValue="#['null']" actualValue="#[payload.Request.payload.customer.individualEntity.pepStatus]" doc:name="validating individuals attribute to be null object if orgtype is nonindividual"/>
+    </munit:test>
+    
+
+</mule>
+
+
+
+
